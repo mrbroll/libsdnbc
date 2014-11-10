@@ -1,0 +1,71 @@
+apply plugin: 'c'
+apply plugin: 'cpp'
+import org.ajoberstar.grgit.*
+
+buildscript {
+    repositories { mavenCentral() }
+    dependencies {
+        classpath 'org.ajoberstar:grgit:0.3.1'
+    }
+}
+
+model {
+    buildTypes {
+        debug
+        release
+    }
+    repositories {
+        libs (PrebuiltLibraries) {
+            gtest {
+                headers.srcDir '/Users/mrbroll/projects/fleaux/gtest/include'
+                binaries.withType(StaticLibraryBinary) {
+                    staticLibraryFile  = file('/Users/mrbroll/projects/fleaux/gtest/build/libgtest.a')
+                }
+            }
+        }
+    }
+}
+
+binaries.all {
+    if (buildType == buildTypes.debug) {
+        cCompiler.args '-g'
+        cppCompiler.args '-g'
+    }
+}
+
+libraries {
+    fleaux {}
+}
+
+executables {
+    fleauxtest {
+        binaries.all {
+            lib libraries.fleaux.static
+            lib library: 'gtest', linkage: 'static'
+        }
+    }
+}
+
+project(':gtest') {
+    task buildGtest (type: Exec, dependsOn: cloneGtest) {
+        def buildDir = new File('./gtest/build')
+        def gtest = Grgit.open('./gtest')
+        if (gtest.branch.status(branch: 'master').aheadCount > 0) {
+            gtest.pull()
+            if (!buildDir.exists()) {
+                buildDir.mkdirs()
+            }
+            workingDir '.'
+            if (System.properties['os.name'].toLowerCase().contains('windows')) {
+                // DO WINDOWS COMPILATION
+            } else {
+                commandLine './build.sh'
+            }
+        } else {
+            println 'no changes in remote repo'
+            workingDir '.'
+            commandLine 'ls'
+        }        
+    }
+}
+    
