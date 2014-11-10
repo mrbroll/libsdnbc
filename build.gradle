@@ -17,9 +17,9 @@ model {
     repositories {
         libs (PrebuiltLibraries) {
             gtest {
-                headers.srcDir '/Users/mrbroll/projects/fleaux/gtest/include'
+                headers.srcDir './gtest/include'
                 binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile  = file('/Users/mrbroll/projects/fleaux/gtest/build/libgtest.a')
+                    staticLibraryFile  = file('./gtest/build/libgtest.a')
                 }
             }
         }
@@ -40,21 +40,21 @@ libraries {
 executables {
     fleauxtest {
         binaries.all {
+            tasks.withType(CppCompile) {
+                dependsOn buildGtest
+            }
             lib libraries.fleaux.static
             lib library: 'gtest', linkage: 'static'
         }
     }
 }
 
-project(':gtest') {
-    task buildGtest (type: Exec) {
-        workingDir '.'
-        if (System.properties['os.name'].toLowerCase().contains('windows')) {
-            // DO WINDOWS COMPILATION
-        } else {
-            commandLine './build.sh'
-        }
-                
+task buildGtest (type: Exec) {
+    workingDir './gtest'
+    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+        // DO WINDOWS COMPILATION
+    } else {
+        commandLine './build.sh'
     }
+            
 }
-    
