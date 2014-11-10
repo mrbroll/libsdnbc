@@ -85,7 +85,7 @@ namespace {
             fl_dictionary_t *dict0;
     };
 
-    TEST_F(DictionaryTest, SetGetTest)
+    TEST_F(DictionaryTest, SetGetRemoveTest)
     {
         char testKey0[] = "key";
         char testKey1[] = "anotherkey";
@@ -104,29 +104,11 @@ namespace {
         ASSERT_STREQ(testValue3, (char *)fl_dictionary_get(dict0, testKey3));
         ASSERT_STREQ(testValue0, (char *)fl_dictionary_get(dict0, testKey0));
         ASSERT_STREQ(testValue2, (char *)fl_dictionary_get(dict0, testKey2));
-    }
-
-    TEST_F(DictionaryTest, RemoveTest)
-    {
-        char testKey0[] = "key";
-        char testKey1[] = "anotherkey";
-        char testKey2[] = "random";
-        char testKey3[] = "@@9"; //should collide with "key"
-        char testValue0[] = "test value zero";
-        char testValue1[] = "test value one";
-        char testValue2[] = "test value two";
-        char testValue3[] = "test value three";
-        fl_dictionary_set(dict0, testKey0, testValue0, 16);
-        fl_dictionary_set(dict0, testKey1, testValue1, 16);
-        fl_dictionary_set(dict0, testKey2, testValue2, 16);
-        fl_dictionary_set(dict0, testKey3, testValue3, 16);
-
+        
         fl_dictionary_remove(dict0, testKey0);
         fl_dictionary_remove(dict0, testKey2);
         ASSERT_TRUE(fl_dictionary_get(dict0, testKey0) == NULL);
         ASSERT_TRUE(fl_dictionary_get(dict0, testKey2) == NULL);
-        ASSERT_STREQ(testValue1, (char *)fl_dictionary_get(dict0, testKey1));
-        ASSERT_STREQ(testValue3, (char *)fl_dictionary_get(dict0, testKey3));
     }
 }
 

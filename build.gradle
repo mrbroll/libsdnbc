@@ -47,25 +47,14 @@ executables {
 }
 
 project(':gtest') {
-    task buildGtest (type: Exec, dependsOn: cloneGtest) {
-        def buildDir = new File('./gtest/build')
-        def gtest = Grgit.open('./gtest')
-        if (gtest.branch.status(branch: 'master').aheadCount > 0) {
-            gtest.pull()
-            if (!buildDir.exists()) {
-                buildDir.mkdirs()
-            }
-            workingDir '.'
-            if (System.properties['os.name'].toLowerCase().contains('windows')) {
-                // DO WINDOWS COMPILATION
-            } else {
-                commandLine './build.sh'
-            }
+    task buildGtest (type: Exec) {
+        workingDir '.'
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            // DO WINDOWS COMPILATION
         } else {
-            println 'no changes in remote repo'
-            workingDir '.'
-            commandLine 'ls'
-        }        
+            commandLine './build.sh'
+        }
+                
     }
 }
     

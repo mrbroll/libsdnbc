@@ -106,10 +106,13 @@ int fl_dictionary_set(fl_dictionary_t *dict, char *key, void *data, size_t dataS
 
 void fl_dictionary_remove(fl_dictionary_t *dict, char *key)
 {
-    if (!dict || fl_dictionary_get(dict, key))
+    if (!dict)
         return;
 
     dictionaryEntry_t *dEnt = ((dictionaryEntry_t **)dict->entries)[getHash(key)];
+
+    if (!dEnt)
+        return;
 
     if (!strcmp(dEnt->key, key)) {
         ((dictionaryEntry_t **)dict->entries)[getHash(key)] = dEnt->next;
@@ -120,8 +123,7 @@ void fl_dictionary_remove(fl_dictionary_t *dict, char *key)
     dictionaryEntry_t *prev = dEnt;
     while ((dEnt = dEnt->next)) {
         if (!strcmp(dEnt->key, key)) {
-            prev->next = dEnt->next;
-            destroyEntry(dEnt);
+            prev->next = destroyEntry(dEnt);
             return;
         }
         prev = dEnt;
@@ -135,10 +137,10 @@ void fl_dictionary_destroy(fl_dictionary_t *dict)
 
     dictionaryEntry_t **dEntries = (dictionaryEntry_t **)dict->entries;
     if (dEntries) {
+        dictionaryEntry_t *dEnt;
         int i;
-        for (int i = 0; i < MAXHASH; i++)
-        {
-            dictionaryEntry_t *dEnt = dEntries[i];
+        for (int i = 0; i < MAXHASH; i++) {
+            dEnt = dEntries[i];
             if (!dEnt)
                 continue;
             while ((dEnt = destroyEntry(dEnt)));
