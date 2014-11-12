@@ -6,23 +6,23 @@
 #define EXPORT __attribute__((visibility("default")))
 
 
-typedef struct fl_gapBuffer_internal_s
+typedef struct sdnb_gapBuffer_internal_s
 {
     char *_bufStart;
     char *_bufEnd;
     char *_gapStart;
     char *_gapEnd;
     char *_data;
-} fl_gapBuffer_internal_t;
+} sdnb_gapBuffer_internal_t;
 
-void fl_gapBuffer_expand(fl_gapBuffer_t *buf);
-void fl_gapBuffer_shrink(fl_gapBuffer_t *buf);
+void sdnb_gapBuffer_expand(sdnb_gapBuffer_t *buf);
+void sdnb_gapBuffer_shrink(sdnb_gapBuffer_t *buf);
 
 EXPORT
-fl_gapBuffer_t *fl_gapBuffer_create(size_t size)
+sdnb_gapBuffer_t *sdnb_gapBuffer_create(size_t size)
 {
-    fl_gapBuffer_t *buf = (fl_gapBuffer_t *)malloc(sizeof(fl_gapBuffer_t));
-    fl_gapBuffer_internal_t *_internal = (fl_gapBuffer_internal_t *)malloc(sizeof(fl_gapBuffer_internal_t));
+    sdnb_gapBuffer_t *buf = (sdnb_gapBuffer_t *)malloc(sizeof(sdnb_gapBuffer_t));
+    sdnb_gapBuffer_internal_t *_internal = (sdnb_gapBuffer_internal_t *)malloc(sizeof(sdnb_gapBuffer_internal_t));
     buf->_internal = _internal;
 
     _internal->_bufStart = (char *)malloc(size);
@@ -39,9 +39,9 @@ fl_gapBuffer_t *fl_gapBuffer_create(size_t size)
 }
 
 EXPORT
-void fl_gapBuffer_destroy(fl_gapBuffer_t *buf)
+void sdnb_gapBuffer_destroy(sdnb_gapBuffer_t *buf)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     if (_internal->_bufStart) {
         free(_internal->_bufStart);
@@ -65,25 +65,25 @@ void fl_gapBuffer_destroy(fl_gapBuffer_t *buf)
 }
 
 EXPORT
-void fl_gapBuffer_insertChar(fl_gapBuffer_t *buf, const char c)
+void sdnb_gapBuffer_insertChar(sdnb_gapBuffer_t *buf, const char c)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     if (_internal->_gapStart == _internal->_gapEnd)
-        fl_gapBuffer_expand(buf);
+        sdnb_gapBuffer_expand(buf);
 
     *(_internal->_gapStart) = c;
     _internal->_gapStart++;
 }
 
 EXPORT
-void fl_gapBuffer_insertString(fl_gapBuffer_t*buf, const char *str, size_t length)
+void sdnb_gapBuffer_insertString(sdnb_gapBuffer_t*buf, const char *str, size_t length)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     while ((_internal->_gapEnd - _internal->_gapStart) < length)
     {
-        fl_gapBuffer_expand(buf);
+        sdnb_gapBuffer_expand(buf);
     }
 
     memcpy(_internal->_gapStart, str, length);
@@ -91,9 +91,9 @@ void fl_gapBuffer_insertString(fl_gapBuffer_t*buf, const char *str, size_t lengt
 }
 
 EXPORT
-char *fl_gapBuffer_remove(fl_gapBuffer_t *buf, size_t numChars, fl_direction_1d_t direction)
+char *sdnb_gapBuffer_remove(sdnb_gapBuffer_t *buf, size_t numChars, sdnb_direction_1d_t direction)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     if (direction == FL_1D_BACKWARD)
     {
@@ -108,9 +108,9 @@ char *fl_gapBuffer_remove(fl_gapBuffer_t *buf, size_t numChars, fl_direction_1d_
 }
 
 EXPORT
-const char *fl_gapBuffer_getData(fl_gapBuffer_t *buf)
+const char *sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     if (_internal->_data)
     {
@@ -136,9 +136,9 @@ const char *fl_gapBuffer_getData(fl_gapBuffer_t *buf)
 }
 
 EXPORT
-void fl_gapBuffer_moveGap(fl_gapBuffer_t *buf, size_t numChars, fl_direction_1d_t direction)
+void sdnb_gapBuffer_moveGap(sdnb_gapBuffer_t *buf, size_t numChars, sdnb_direction_1d_t direction)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     if (direction == FL_1D_BACKWARD && numChars <= (_internal->_gapStart - _internal->_bufStart)) {
         _internal->_gapStart -= numChars;
@@ -158,9 +158,9 @@ void fl_gapBuffer_moveGap(fl_gapBuffer_t *buf, size_t numChars, fl_direction_1d_
     return;
 }
 
-void fl_gapBuffer_expand(fl_gapBuffer_t *buf)
+void sdnb_gapBuffer_expand(sdnb_gapBuffer_t *buf)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     size_t bufferLength = _internal->_bufEnd - _internal->_bufStart;
     size_t backBufferLength = _internal->_gapStart - _internal->_bufStart;
@@ -180,9 +180,9 @@ void fl_gapBuffer_expand(fl_gapBuffer_t *buf)
     tempGapEnd = NULL;
 }
 
-void fl_gapBuffer_shrink(fl_gapBuffer_t *buf)
+void sdnb_gapBuffer_shrink(sdnb_gapBuffer_t *buf)
 {
-    fl_gapBuffer_internal_t *_internal = ((fl_gapBuffer_internal_t *)buf->_internal);
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     size_t bufferLength = _internal->_bufEnd - _internal->_bufStart;
     size_t backBufferLength = _internal->_gapStart - _internal->_bufStart;

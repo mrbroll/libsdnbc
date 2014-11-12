@@ -50,9 +50,9 @@ dictionaryEntry_t *destroyEntry(dictionaryEntry_t *dEnt)
     return dEnt->next;
 }
 
-fl_dictionary_t *fl_dictionary_create(void)
+sdnb_dictionary_t *sdnb_dictionary_create(void)
 {
-    fl_dictionary_t *newDict = (fl_dictionary_t *)malloc(sizeof(fl_dictionary_t));
+    sdnb_dictionary_t *newDict = (sdnb_dictionary_t *)malloc(sizeof(sdnb_dictionary_t));
     if (!newDict)
         return NULL;
 
@@ -64,7 +64,7 @@ fl_dictionary_t *fl_dictionary_create(void)
     return newDict;
 }
 
-void *fl_dictionary_get(fl_dictionary_t *dict, const char *key)
+void *sdnb_dictionary_get(sdnb_dictionary_t *dict, const char *key)
 {
     if (!(dict || key))
         return NULL;
@@ -81,9 +81,9 @@ void *fl_dictionary_get(fl_dictionary_t *dict, const char *key)
     return NULL;
 }
 
-int fl_dictionary_set(fl_dictionary_t *dict, char *key, void *data, size_t dataSize)
+int sdnb_dictionary_set(sdnb_dictionary_t *dict, char *key, void *data, size_t dataSize)
 {
-    if (!dict || fl_dictionary_get(dict, key))
+    if (!dict || sdnb_dictionary_get(dict, key))
         return 1;
     
     dictionaryEntry_t *dEnt = ((dictionaryEntry_t **)dict->entries)[getHash(key)];
@@ -104,7 +104,7 @@ int fl_dictionary_set(fl_dictionary_t *dict, char *key, void *data, size_t dataS
     return 1;
 }
 
-void fl_dictionary_remove(fl_dictionary_t *dict, char *key)
+void sdnb_dictionary_remove(sdnb_dictionary_t *dict, char *key)
 {
     if (!dict)
         return;
@@ -130,7 +130,7 @@ void fl_dictionary_remove(fl_dictionary_t *dict, char *key)
     }
 }
 
-void fl_dictionary_destroy(fl_dictionary_t *dict)
+void sdnb_dictionary_destroy(sdnb_dictionary_t *dict)
 {
     if (!dict)
         return;

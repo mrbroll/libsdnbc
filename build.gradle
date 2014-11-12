@@ -34,16 +34,16 @@ binaries.all {
 }
 
 libraries {
-    fleaux {}
+    sdnbc {}
 }
 
 executables {
-    fleauxtest {
+    test {
         binaries.all {
             tasks.withType(CppCompile) {
                 dependsOn buildGtest
             }
-            lib libraries.fleaux.static
+            lib libraries.sdnbc.static
             lib library: 'gtest', linkage: 'static'
         }
     }
