@@ -2,4 +2,4 @@ language: cpp
 compiler:
     - gcc
     - clang
-script: ./gradlew debugTestExecutable && ./build/binaries/testExecutable/debug/test
+script: ./gradlew debugTestExecutable
