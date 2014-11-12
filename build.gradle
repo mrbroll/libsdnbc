@@ -58,3 +58,7 @@ task buildGtest (type: Exec) {
     }
             
 }
+
+task wrapper (type: Wrapper) {
+    gradleVersion = '2.2'
+}
