@@ -34,13 +34,22 @@ namespace {
     TEST_F(GapBufferTest, InsertTest)
     {
         const char *testString0 = "this is a test string";
-        ASSERT_EQ(memcmp(testString0, sdnb_gapBuffer_getData(gb0, 0, gb0->length), gb0->length), 0);
+        char *dataStr2 = (char *)malloc(gb0->length + 1);
+        sdnb_gapBuffer_getData(gb0, dataStr2, 0, gb0->length);
+        ASSERT_STREQ(testString0, dataStr2);
+        free(dataStr2);
         const char *testString1 = ". adding more text here";
         sdnb_gapBuffer_insertString(gb0, testString1, 23);
-        ASSERT_STREQ("this is a test string. adding more text here", sdnb_gapBuffer_getData(gb0, 0, gb0->length));
+        char *dataStr0 = (char *)malloc(gb0->length + 1);
+        sdnb_gapBuffer_getData(gb0, dataStr0, 0, gb0->length);
+        ASSERT_STREQ("this is a test string. adding more text here", dataStr0);
+        free(dataStr0);
         const char *testString2 = "this is a test string.";
         sdnb_gapBuffer_insertChar(gb1, '.');
-        ASSERT_STREQ(testString2, sdnb_gapBuffer_getData(gb1, 0, gb1->length));
+        char *dataStr1 = (char *)malloc(gb1->length + 1);
+        sdnb_gapBuffer_getData(gb1, dataStr1, 0, gb1->length);
+        ASSERT_STREQ(testString2, dataStr1);
+        free(dataStr1);
     }
 
     TEST_F(GapBufferTest, RemoveTest)
@@ -48,12 +57,17 @@ namespace {
         sdnb_gapBuffer_remove(gb0, -6);
         sdnb_gapBuffer_insertString(gb0, "dude.", 5);
         const char *testString0 = "this is a test dude.";
-        ASSERT_STREQ(testString0, sdnb_gapBuffer_getData(gb0, 0, gb0->length));
-
+        char *dataStr0 = (char *)malloc(gb0->length + 1);
+        sdnb_gapBuffer_getData(gb0, dataStr0, 0, gb0->length);
+        ASSERT_STREQ(testString0, dataStr0);
+        free(dataStr0);
         sdnb_gapBuffer_remove(gb1, -1);
         sdnb_gapBuffer_insertString(gb1, "g. And this is some more.", 25);
         const char *testString1 = "this is a test string. And this is some more.";
-        ASSERT_STREQ(testString1, sdnb_gapBuffer_getData(gb1, 0, gb1->length));
+        char *dataStr1 = (char *)malloc(gb1->length + 1);
+        sdnb_gapBuffer_getData(gb1, dataStr1, 0, gb1->length);
+        ASSERT_STREQ(testString1, dataStr1);
+        free(dataStr1);
     }
 
     TEST_F(GapBufferTest, MoveGapTest)
@@ -61,12 +75,17 @@ namespace {
         sdnb_gapBuffer_moveGap(gb0, -6);
         sdnb_gapBuffer_insertString(gb0, "mac daddy ", 10);
         const char *testString0 = "this is a test mac daddy string";
-        ASSERT_STREQ(testString0, sdnb_gapBuffer_getData(gb0, 0, gb0->length));
-
+        char *dataStr0 = (char *)malloc(gb0->length + 1);
+        sdnb_gapBuffer_getData(gb0, dataStr0, 0, gb0->length);
+        ASSERT_STREQ(testString0, dataStr0);
+        free(dataStr0);
         sdnb_gapBuffer_moveGap(gb0, 3);
         sdnb_gapBuffer_insertString(gb0, "izz", 3);
         const char *testString1 = "this is a test mac daddy strizzing";
-        ASSERT_STREQ(testString1, sdnb_gapBuffer_getData(gb0, 0, gb0->length));
+        char *dataStr1 = (char *)malloc(gb0->length + 1);
+        sdnb_gapBuffer_getData(gb0, dataStr1, 0, gb0->length);
+        ASSERT_STREQ(testString1, dataStr1);
+        free(dataStr1);
     }
 
     class DictionaryTest : public ::testing::Test

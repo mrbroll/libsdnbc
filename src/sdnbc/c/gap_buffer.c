@@ -12,7 +12,6 @@ typedef struct sdnb_gapBuffer_internal_s
     char *_bufEnd;
     char *_gapStart;
     char *_gapEnd;
-    char *_data;
     char *_iter;
 } sdnb_gapBuffer_internal_t;
 
@@ -33,7 +32,6 @@ sdnb_gapBuffer_t *sdnb_gapBuffer_create(size_t size)
     _internal->_bufEnd = _internal->_bufStart + size;
     _internal->_gapStart = _internal->_bufStart;
     _internal->_gapEnd = _internal->_bufEnd;
-    _internal->_data = NULL;
     _internal->_iter = NULL;
     buf->length = 0;
     buf->gapIndex = 0;
@@ -53,11 +51,6 @@ void sdnb_gapBuffer_destroy(sdnb_gapBuffer_t *buf)
         _internal->_gapStart = NULL;
         _internal->_gapEnd = NULL;
         _internal->_iter = NULL;
-    }
-
-    if (_internal->_data) {
-        free(_internal->_data);
-        _internal->_data = NULL;
         buf->length = 0;
         buf->gapIndex = 0;
     }
@@ -118,46 +111,35 @@ void sdnb_gapBuffer_remove(sdnb_gapBuffer_t *buf, int length)
 }
 
 EXPORT
-const char *sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf, size_t from, size_t to)
+void sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf, char *data, size_t from, size_t to)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
     if (from > to || to > buf->length) {
-        return NULL;
+        return;
     }
-
-    if (_internal->_data)
-    {
-        free(_internal->_data);
-        _internal->_data = NULL;
-    }
-
-    _internal->_data = (char *)malloc(to - from + 2);
-    if (!_internal->_data)
-        exit(1);
 
     if (to < buf->gapIndex) {
-        memcpy(_internal->_data, \
+        memcpy(data, \
                 _internal->_bufStart + from, \
                 (to - from + 1));
     } else if (from < buf->gapIndex && to >= buf->gapIndex) {
         size_t backLength = buf->gapIndex - from;
         size_t frontLength = (to - from + 1) - backLength;
-        memcpy(_internal->_data, \
+        memcpy(data, \
                 _internal->_bufStart + from, \
                 backLength);
 
-        memcpy((_internal->_data + backLength), \
+        memcpy((data + backLength), \
                 _internal->_gapEnd, \
                 frontLength);
     } else if (from >= buf->gapIndex) {
-        memcpy(_internal->_data, \
+        memcpy(data, \
                 _internal->_gapEnd + (from - buf->gapIndex), \
               (to - from + 1));
     }
 
-    _internal->_data[buf->length] = '\0';
-    return _internal->_data;
+    data[buf->length]= '\0';
 }
 
 EXPORT
@@ -236,7 +218,7 @@ void sdnb_gapBuffer_expand(sdnb_gapBuffer_t *buf)
     size_t frontBufferLength = _internal->_bufEnd - _internal->_gapEnd;
 
     char *tempBufferStart = (char *)realloc(_internal->_bufStart, (bufferLength << 1));
-    assert(tempBufferStart != NULL);
+    //assert(tempBufferStart != NULL);
     _internal->_bufStart = tempBufferStart;
     _internal->_gapStart = _internal->_bufStart + backBufferLength;
     _internal->_gapEnd = _internal->_bufStart + bufferLength - frontBufferLength;
@@ -244,7 +226,7 @@ void sdnb_gapBuffer_expand(sdnb_gapBuffer_t *buf)
 
     char *tempGapEnd = _internal->_bufEnd - frontBufferLength;
     void *memTest = memcpy(tempGapEnd, _internal->_gapEnd, frontBufferLength);
-    assert(memTest != NULL);
+    //assert(memTest != NULL);
     _internal->_gapEnd = tempGapEnd;
     tempGapEnd = NULL;
 }
@@ -259,9 +241,9 @@ void sdnb_gapBuffer_shrink(sdnb_gapBuffer_t *buf)
 
     char *frontBuffer = (char *)malloc(frontBufferLength);
     void *memTest = memcpy(frontBuffer, _internal->_gapEnd, frontBufferLength);
-    assert(memTest != NULL);
+    //assert(memTest != NULL);
     char *tempBufferStart = (char *)realloc(_internal->_bufStart, (bufferLength >> 1));
-    assert(tempBufferStart != NULL);
+    //assert(tempBufferStart != NULL);
     _internal->_bufStart = tempBufferStart;
     tempBufferStart = NULL;
     _internal->_gapStart = _internal->_bufStart + backBufferLength;
@@ -269,7 +251,7 @@ void sdnb_gapBuffer_shrink(sdnb_gapBuffer_t *buf)
     _internal->_gapEnd = _internal->_bufEnd - frontBufferLength;
 
     memTest = memcpy(_internal->_gapEnd, frontBuffer, frontBufferLength);
-    assert(memTest != NULL);
+    //assert(memTest != NULL);
     free(frontBuffer);
     frontBuffer = NULL;
 }
