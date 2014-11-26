@@ -13,6 +13,7 @@ typedef struct sdnb_gapBuffer_internal_s
     char *_gapStart;
     char *_gapEnd;
     char *_data;
+    char *_iter;
 } sdnb_gapBuffer_internal_t;
 
 void sdnb_gapBuffer_expand(sdnb_gapBuffer_t *buf);
@@ -33,7 +34,9 @@ sdnb_gapBuffer_t *sdnb_gapBuffer_create(size_t size)
     _internal->_gapStart = _internal->_bufStart;
     _internal->_gapEnd = _internal->_bufEnd;
     _internal->_data = NULL;
+    _internal->_iter = NULL;
     buf->length = 0;
+    buf->gapIndex = 0;
 
     return buf;
 }
@@ -49,12 +52,14 @@ void sdnb_gapBuffer_destroy(sdnb_gapBuffer_t *buf)
         _internal->_bufEnd = NULL;
         _internal->_gapStart = NULL;
         _internal->_gapEnd = NULL;
+        _internal->_iter = NULL;
     }
 
     if (_internal->_data) {
         free(_internal->_data);
         _internal->_data = NULL;
         buf->length = 0;
+        buf->gapIndex = 0;
     }
 
     free(_internal);
@@ -74,6 +79,8 @@ void sdnb_gapBuffer_insertChar(sdnb_gapBuffer_t *buf, const char c)
 
     *(_internal->_gapStart) = c;
     _internal->_gapStart++;
+    buf->gapIndex++;
+    buf->length++;
 }
 
 EXPORT
@@ -88,29 +95,36 @@ void sdnb_gapBuffer_insertString(sdnb_gapBuffer_t*buf, const char *str, size_t l
 
     memcpy(_internal->_gapStart, str, length);
     _internal->_gapStart += length;
+    buf->gapIndex += length;
+    buf->length += length;
 }
 
 EXPORT
-char *sdnb_gapBuffer_remove(sdnb_gapBuffer_t *buf, size_t numChars, sdnb_direction_1d_t direction)
+void sdnb_gapBuffer_remove(sdnb_gapBuffer_t *buf, int length)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
-    if (direction == FL_1D_BACKWARD)
-    {
-        _internal->_gapStart -= numChars;
-        return _internal->_gapStart; //caller must alloc mem
-    }
-    else
-    {
-        _internal->_gapEnd += numChars;
-        return (_internal->_gapEnd - numChars); //caller must alloc mem
+    if (_internal->_gapStart + length >= _internal->_bufStart && \
+        _internal->_gapEnd + length <= _internal->_bufEnd) {
+        if (length < 0) {
+            _internal->_gapStart += length;
+            buf->length += length;
+            buf->gapIndex += length;
+        } else {
+            _internal->_gapEnd += length;
+            buf->length -= length;
+        }
     }
 }
 
 EXPORT
-const char *sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf)
+const char *sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf, size_t from, size_t to)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
+
+    if (from > to || to > buf->length) {
+        return NULL;
+    }
 
     if (_internal->_data)
     {
@@ -118,44 +132,99 @@ const char *sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf)
         _internal->_data = NULL;
     }
 
-    buf->length = ((_internal->_gapStart - _internal->_bufStart) + \
-                    (_internal->_bufEnd - _internal->_gapEnd));
-    _internal->_data = (char *)malloc(buf->length);
+    _internal->_data = (char *)malloc(to - from + 2);
     if (!_internal->_data)
         exit(1);
 
-    memcpy(_internal->_data, \
-            _internal->_bufStart, \
-            (_internal->_gapStart - _internal->_bufStart));
+    if (to < buf->gapIndex) {
+        memcpy(_internal->_data, \
+                _internal->_bufStart + from, \
+                (to - from + 1));
+    } else if (from < buf->gapIndex && to >= buf->gapIndex) {
+        size_t backLength = buf->gapIndex - from;
+        size_t frontLength = (to - from + 1) - backLength;
+        memcpy(_internal->_data, \
+                _internal->_bufStart + from, \
+                backLength);
 
-    memcpy((_internal->_data + (_internal->_gapStart - _internal->_bufStart)), \
-            _internal->_gapEnd, \
-            (_internal->_bufEnd - _internal->_gapEnd));
+        memcpy((_internal->_data + backLength), \
+                _internal->_gapEnd, \
+                frontLength);
+    } else if (from >= buf->gapIndex) {
+        memcpy(_internal->_data, \
+                _internal->_gapEnd + (from - buf->gapIndex), \
+              (to - from + 1));
+    }
 
+    _internal->_data[buf->length] = '\0';
     return _internal->_data;
 }
 
 EXPORT
-void sdnb_gapBuffer_moveGap(sdnb_gapBuffer_t *buf, size_t numChars, sdnb_direction_1d_t direction)
+void sdnb_gapBuffer_moveGap(sdnb_gapBuffer_t *buf, int length)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
-    if (direction == FL_1D_BACKWARD && numChars <= (_internal->_gapStart - _internal->_bufStart)) {
-        _internal->_gapStart -= numChars;
-        _internal->_gapEnd -= numChars;
-        memmove(_internal->_gapEnd, _internal->_gapStart, numChars);
-    } else if (direction == FL_1D_FORWARD && numChars <= (_internal->_bufEnd - _internal->_gapEnd)) {
-        memmove(_internal->_gapStart, _internal->_gapEnd, numChars);
-        _internal->_gapStart += numChars;
-        _internal->_gapEnd += numChars;
+    if (_internal->_gapStart + length >= _internal->_bufStart && \
+        _internal->_gapEnd + length <= _internal->_bufEnd) {
+        if (length < 0) {
+            _internal->_gapStart += length;
+            _internal->_gapEnd += length;
+            memmove(_internal->_gapEnd, _internal->_gapStart, abs(length));
+        } else {
+            memmove(_internal->_gapStart, _internal->_gapEnd, length);
+            _internal->_gapStart += length;
+            _internal->_gapEnd += length;
+        }
+        buf->gapIndex += length;
+    }
+}
+
+EXPORT
+char sdnb_gapBuffer_iterSet(sdnb_gapBuffer_t *buf, size_t index)
+{
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
+    char iterVal;
+    if (index > buf->length) { //out of bounds
+        iterVal = '\0';
     } else {
-        // you tried to move the gap out of bounds,
-        // ya ding-a-ling
-        // maybe should return an error/success value,
-        // but it's not my job to prevent you from being a ding-a-ling
+        if (index < buf->gapIndex) {
+            _internal->_iter = _internal->_bufStart + index;
+        } else {
+            _internal->_iter = _internal->_gapEnd + (index - buf->gapIndex);
+        }
+        iterVal = *(_internal->_iter);
     }
 
-    return;
+    return iterVal;
+}
+
+EXPORT
+char sdnb_gapBuffer_iterNext(sdnb_gapBuffer_t *buf)
+{
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
+    char iterVal;
+    if (_internal->_iter >= _internal->_bufEnd) { //trying to iterate past end
+        iterVal = '\0';
+    } else {
+        _internal->_iter++;
+        iterVal = *(_internal->_iter);
+    }
+    return iterVal;
+}
+
+EXPORT
+char sdnb_gapBuffer_iterPrev(sdnb_gapBuffer_t *buf)
+{
+    sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
+    char iterVal;
+    if (_internal->_iter == _internal->_bufStart) {
+        iterVal = '\0';
+    } else {
+        _internal->_iter--;
+        iterVal = *(_internal->_iter);
+    }
+    return iterVal;
 }
 
 void sdnb_gapBuffer_expand(sdnb_gapBuffer_t *buf)
