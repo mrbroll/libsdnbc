@@ -17,6 +17,11 @@ EXPORT
 sdnb_ptr_t *sdnb_ptr_create(void *data, size_t dataSize)
 {
     sdnb_ptr_t *ptr = (sdnb_ptr_t *)malloc(sizeof(sdnb_ptr_t));
+    ptr->data = malloc(dataSize);
+    if (!ptr->data) {
+        fprintf(stderr, "Unable to allocate memory for ptr data\n");
+        exit(1);
+    }
     void *noErr = memcpy(ptr->data, data, dataSize);
     if (!noErr) {
         fprintf(stderr, "Unable to create sdnb_ptr, exiting\n");

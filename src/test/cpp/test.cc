@@ -2,6 +2,7 @@
 #include <iostream>
 #include "../../sdnbc/headers/gap_buffer.h"
 #include "../../sdnbc/headers/dictionary.h"
+#include "../../sdnbc/headers/ptr.h"
 #include "gtest/gtest.h"
 
 using namespace std;
@@ -128,6 +129,32 @@ namespace {
         sdnb_dictionary_remove(dict0, testKey2);
         ASSERT_TRUE(sdnb_dictionary_get(dict0, testKey0) == NULL);
         ASSERT_TRUE(sdnb_dictionary_get(dict0, testKey2) == NULL);
+    }
+
+    class PtrTest : public ::testing::Test
+    {
+        protected:
+            PtrTest()
+            {
+                char testString[] = "This is test ptr data!";
+                ptr0 = sdnb_ptr_create(testString, strlen(testString) + 1);
+            }
+
+            ~PtrTest()
+            {
+                sdnb_ptr_destroy(ptr0);
+            }
+
+            sdnb_ptr_t *ptr0;
+    };
+
+    //Just Testing to make sure that nothing breaks
+    //Implementation is too simple to do any real testing
+    TEST_F(PtrTest, IncrefDecrefTest)
+    {
+        sdnb_ptr_t *ptr1 = sdnb_ptr_incref(ptr0);
+        ASSERT_STREQ((char *)ptr0->data, (char *)ptr1->data);
+        sdnb_ptr_decref(ptr1); 
     }
 }
 
