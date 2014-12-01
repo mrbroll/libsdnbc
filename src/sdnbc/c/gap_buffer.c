@@ -63,7 +63,7 @@ void sdnb_gapBuffer_destroy(sdnb_gapBuffer_t *buf)
 }
 
 EXPORT
-void sdnb_gapBuffer_insertChar(sdnb_gapBuffer_t *buf, const char c)
+void sdnb_gapBuffer_insertChar(sdnb_gapBuffer_t *buf, char c)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
@@ -77,7 +77,7 @@ void sdnb_gapBuffer_insertChar(sdnb_gapBuffer_t *buf, const char c)
 }
 
 EXPORT
-void sdnb_gapBuffer_insertString(sdnb_gapBuffer_t*buf, const char *str, size_t length)
+void sdnb_gapBuffer_insertString(sdnb_gapBuffer_t*buf, char *str, size_t length)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
