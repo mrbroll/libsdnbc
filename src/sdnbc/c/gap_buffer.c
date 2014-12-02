@@ -143,7 +143,7 @@ void sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf, char *data, size_t from, size
 }
 
 EXPORT
-void sdnb_gapBuffer_moveGap(sdnb_gapBuffer_t *buf, int length)
+int sdnb_gapBuffer_moveGap(sdnb_gapBuffer_t *buf, int length)
 {
     sdnb_gapBuffer_internal_t *_internal = ((sdnb_gapBuffer_internal_t *)buf->_internal);
 
@@ -159,6 +159,9 @@ void sdnb_gapBuffer_moveGap(sdnb_gapBuffer_t *buf, int length)
             _internal->_gapEnd += length;
         }
         buf->gapIndex += length;
+        return 0;
+    } else {
+        return 1;
     }
 }
 
