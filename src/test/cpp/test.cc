@@ -89,6 +89,30 @@ namespace {
         free(dataStr1);
     }
 
+    TEST_F(GapBufferTest, IterTest)
+    {
+        //out of bounds
+        char c = sdnb_gapBuffer_iterSet(gb0, 22);
+        ASSERT_EQ(c, '\0');
+        char str0[21] = "";
+        c = sdnb_gapBuffer_iterSet(gb0, 0);
+        for (int i = 0; i < gb0->length; i++) {
+            strncat(str0, &c, 1);
+            c = sdnb_gapBuffer_iterNext(gb0);
+        }
+        char *dataStr = (char *)malloc(gb0->length + 1);
+        sdnb_gapBuffer_getData(gb0, dataStr, 0, gb0->length);
+        ASSERT_STREQ(str0, dataStr);
+        char str1[21] = "";
+        const char *dataStr1 = "gnirts tset a si siht";
+        c = sdnb_gapBuffer_iterSet(gb0, gb0->length - 1);
+        for (int i = 0; i < gb0->length; i++) {
+            strncat(str1, &c, 1);
+            c = sdnb_gapBuffer_iterPrev(gb0);
+        }
+        ASSERT_STREQ(str1, dataStr1);
+    }
+
     class DictionaryTest : public ::testing::Test
     {
         protected:
