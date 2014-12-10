@@ -12,7 +12,7 @@ typedef struct sdnb_gapBuffer_s
 {
     size_t length;
     size_t gapIndex;
-    void *_internal; //private - don't touch!
+    void *_private; //private - don't touch!
 } sdnb_gapBuffer_t;
 
 sdnb_gapBuffer_t *sdnb_gapBuffer_create(size_t size);

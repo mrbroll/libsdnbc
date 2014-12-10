@@ -94,23 +94,49 @@ namespace {
         //out of bounds
         char c = sdnb_gapBuffer_iterSet(gb0, 22);
         ASSERT_EQ(c, '\0');
+
         char str0[21] = "";
         c = sdnb_gapBuffer_iterSet(gb0, 0);
-        for (int i = 0; i < gb0->length; i++) {
-            strncat(str0, &c, 1);
+        strncat(str0, &c, 1);
+        for (int i = 1; i < gb0->length; i++) {
             c = sdnb_gapBuffer_iterNext(gb0);
+            strncat(str0, &c, 1);
         }
         char *dataStr = (char *)malloc(gb0->length + 1);
         sdnb_gapBuffer_getData(gb0, dataStr, 0, gb0->length);
-        ASSERT_STREQ(str0, dataStr);
+        ASSERT_STREQ(dataStr, str0);
+        free(dataStr);
+
         char str1[21] = "";
         const char *dataStr1 = "gnirts tset a si siht";
         c = sdnb_gapBuffer_iterSet(gb0, gb0->length - 1);
-        for (int i = 0; i < gb0->length; i++) {
-            strncat(str1, &c, 1);
+        strncat(str1, &c, 1);
+        for (int i = 1; i < gb0->length; i++) {
             c = sdnb_gapBuffer_iterPrev(gb0);
+            strncat(str1, &c, 1);
         }
-        ASSERT_STREQ(str1, dataStr1);
+
+        sdnb_gapBuffer_moveGap(gb0, -6);
+        sdnb_gapBuffer_insertString(gb0, "big ", 4);
+        char str3[32] = "";
+        const char *dataStr3 = "this is a test big string";
+        c = sdnb_gapBuffer_iterSet(gb0, 0);
+        strncat(str3, &c, 1);
+        for (int i = 1; i < gb0->length; i++) {
+            c = sdnb_gapBuffer_iterNext(gb0);
+            strncat(str3, &c, 1);
+        }
+        ASSERT_STREQ(dataStr3, str3);
+
+        const char *dataStr4 = "gnirts gib tset a si siht";
+        char str4[32] = "";
+        c = sdnb_gapBuffer_iterSet(gb0, gb0->length - 1);
+        strncat(str4, &c, 1);
+        for (int i = 1; i < gb0->length; i++) {
+            c = sdnb_gapBuffer_iterPrev(gb0);
+            strncat(str4, &c, 1);
+        }
+        ASSERT_STREQ(dataStr4, str4);
     }
 
     class DictionaryTest : public ::testing::Test
