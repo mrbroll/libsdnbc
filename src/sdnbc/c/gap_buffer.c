@@ -111,10 +111,10 @@ void sdnb_gapBuffer_remove(sdnb_gapBuffer_t *buf, int length)
 }
 
 EXPORT
-void sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf, char *data, size_t from, size_t to)
+void sdnb_gapBuffer_getData(sdnb_gapBuffer_t *buf, char *data, size_t from, size_t length)
 {
     sdnb_gapBuffer_private_t *_private = ((sdnb_gapBuffer_private_t *)buf->_private);
-
+    size_t to = from + length - 1;
     if (from > to || to > buf->length) {
         return;
     }
