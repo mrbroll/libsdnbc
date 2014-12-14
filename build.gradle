@@ -40,7 +40,7 @@ libraries {
 def gtestBuildSDNBC = new File('./deps/gtest/build')
 
 executables {
-    test {
+    sdnbc_test {
         binaries.all {
             lib libraries.sdnbc.static
             lib library: 'gtest', linkage: 'static'
