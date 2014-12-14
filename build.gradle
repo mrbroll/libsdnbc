@@ -17,9 +17,9 @@ model {
     repositories {
         libs (PrebuiltLibraries) {
             gtest {
-                headers.srcDir './gtest/include'
+                headers.srcDir './deps/gtest/include'
                 binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile  = file('./gtest/build/libgtest.a')
+                    staticLibraryFile  = file('./deps/gtest/build/libgtest.a')
                 }
             }
         }
@@ -37,20 +37,32 @@ libraries {
     sdnbc {}
 }
 
+def gtestBuildSDNBC = new File('./deps/gtest/build')
+
 executables {
     test {
         binaries.all {
-            tasks.withType(CppCompile) {
-                dependsOn buildGtest
-            }
             lib libraries.sdnbc.static
             lib library: 'gtest', linkage: 'static'
+            if (!gtestBuildSDNBC.exists()) {
+                tasks.withType(CppCompile) { 
+                    dependsOn buildSDNBCGtest
+                }
+            }
+            tasks.withType(LinkExecutable) {
+                doLast {
+                    if (outputFile.exists()) {
+                        def sdnbTestProc = outputFile.getAbsolutePath().execute()
+                        println "Running Tests...\n${sdnbTestProc.text}"
+                    }
+                }
+            }
         }
     }
 }
 
-task buildGtest (type: Exec) {
-    workingDir './gtest'
+task buildSDNBCGtest (type: Exec) {
+    workingDir './deps/gtest'
     if (System.properties['os.name'].toLowerCase().contains('windows')) {
         // DO WINDOWS COMPILATION
     } else {
