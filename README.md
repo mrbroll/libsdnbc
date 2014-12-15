@@ -38,6 +38,7 @@ __Unix__
 __Windows__
 ```
 gradlew.bat releaseSdnbcStaticLibrary
+```
 
 The library will be output as <project root>/build/binaries/sdnbcStaticLibrary/release/libsdnbc.a
 
