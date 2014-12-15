@@ -78,6 +78,8 @@ task sdnbcTests << {
     } else if (debugTest.exists()) {
         def proc = debugTest.getAbsolutePath().execute()
         println "Running Debug Build Tests...\n${proc.text}"
+    } else {
+        println "You need to build a test executable first!\n"
     }
 }
 
