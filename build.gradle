@@ -1,12 +1,10 @@
 apply plugin: 'c'
 apply plugin: 'cpp'
-import org.ajoberstar.grgit.*
 
-buildscript {
-    repositories { mavenCentral() }
-    dependencies {
-        classpath 'org.ajoberstar:grgit:0.3.1'
-    }
+if (System.properties['os.name'].toLowerCase().contains('windows')) {
+    // clear swap files
+} else {
+    ('find . -name "*.swp" | xargs rm -f').execute()
 }
 
 model {
@@ -52,8 +50,7 @@ executables {
             tasks.withType(LinkExecutable) {
                 doLast {
                     if (outputFile.exists()) {
-                        def sdnbTestProc = outputFile.getAbsolutePath().execute()
-                        println "Running Tests...\n${sdnbTestProc.text}"
+                        println 'Run Tests with "gradle sdnbcTests"\n'
                     }
                 }
             }
@@ -68,7 +65,20 @@ task buildSDNBCGtest (type: Exec) {
     } else {
         commandLine './build.sh'
     }
-            
+}
+
+task sdnbcTests << {
+    def testName = 'sdnb_test'
+    def binDir = project.buildDir.getAbsolutePath() + '/binaries/sdnbc_testExecutable/'
+    def releaseTest = new File(binDir + 'release/' + testName)
+    def debugTest = new File(binDir + 'debug/' + testName)
+    if (releaseTest.exists()) {
+        def proc = releaseTest.getAbsolutePath().execute()
+        println "Running Release Build Tests...\n${proc.text}"
+    } else if (debugTest.exists()) {
+        def proc = debugTest.getAbsolutePath().execute()
+        println "Running Debug Build Tests...\n${proc.text}"
+    }
 }
 
 task wrapper (type: Wrapper) {
