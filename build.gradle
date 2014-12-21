@@ -68,7 +68,7 @@ task buildSDNBCGtest (type: Exec) {
 }
 
 task sdnbcTests << {
-    def testName = 'sdnb_test'
+    def testName = 'sdnbc_test'
     def binDir = project.buildDir.getAbsolutePath() + '/binaries/sdnbc_testExecutable/'
     def releaseTest = new File(binDir + 'release/' + testName)
     def debugTest = new File(binDir + 'debug/' + testName)
