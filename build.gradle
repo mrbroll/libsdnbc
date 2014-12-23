@@ -1,10 +1,27 @@
 apply plugin: 'c'
 apply plugin: 'cpp'
 
-if (System.properties['os.name'].toLowerCase().contains('windows')) {
-    // clear swap files
-} else {
-    ('find . -name "*.swp" | xargs rm -f').execute()
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath 'org.ajoberstar:gradle-git:0.12.0' }
+}
+
+import org.ajoberstar.grgit.*
+
+def handleDep = { uri, depName, buildScript ->
+    def tmpDir = new File(depName)
+    tmpDir.mkdirs()
+    Grgit.clone(dir: tmpDir, uri: uri)
+    def proc = new File(buildScript).getAbsolutePath().execute()
+    println "building ${depName}...\n${proc.text}"
+}
+
+task deps << {
+    def gtestScript = 'deps/gtest/build.sh'
+    if (System.properties['os.name'].toLowerCase().contains('windows')) {
+        gtestScript = 'deps/gtest/build.bat'
+    }
+    handleDep ('https://github.com/mrbroll/gtest-mirror.git', 'gtest', gtestScript)
 }
 
 model {
@@ -17,7 +34,7 @@ model {
             gtest {
                 headers.srcDir './deps/gtest/include'
                 binaries.withType(StaticLibraryBinary) {
-                    staticLibraryFile  = file('./deps/gtest/build/libgtest.a')
+                    staticLibraryFile  = file('./deps/gtest/lib/libgtest.a')
                 }
             }
         }
@@ -35,16 +52,16 @@ libraries {
     sdnbc {}
 }
 
-def gtestBuildSDNBC = new File('./deps/gtest/build')
+def gtestBuildSDNBC = new File('./deps/gtest/lib/libgtest.a')
 
 executables {
-    sdnbc_test {
+    test {
         binaries.all {
             lib libraries.sdnbc.static
             lib library: 'gtest', linkage: 'static'
             if (!gtestBuildSDNBC.exists()) {
                 tasks.withType(CppCompile) { 
-                    dependsOn buildSDNBCGtest
+                    dependsOn deps
                 }
             }
             tasks.withType(LinkExecutable) {
@@ -58,18 +75,9 @@ executables {
     }
 }
 
-task buildSDNBCGtest (type: Exec) {
-    workingDir './deps/gtest'
-    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-        // DO WINDOWS COMPILATION
-    } else {
-        commandLine './build.sh'
-    }
-}
-
-task sdnbcTests << {
-    def testName = 'sdnbc_test'
-    def binDir = project.buildDir.getAbsolutePath() + '/binaries/sdnbc_testExecutable/'
+task test << {
+    def testName = 'test'
+    def binDir = project.buildDir.getAbsolutePath() + '/binaries/testExecutable/'
     def releaseTest = new File(binDir + 'release/' + testName)
     def debugTest = new File(binDir + 'debug/' + testName)
     if (releaseTest.exists()) {
