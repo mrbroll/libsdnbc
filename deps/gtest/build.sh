@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-cd gtest
+cd deps/gtest/src
 if [ ! -d "build" ]; then
     mkdir build
 fi
@@ -8,7 +8,7 @@ cd build
 cmake ..
 make
 cd ../..
-cp gtest/build/libgtest.a deps/gtest/lib
-cp gtest/build/libgtest_main.a deps/gtest/lib
-cp -r gtest/include/gtest deps/gtest/include
-rm -rf gtest
+cp src/build/libgtest.a lib
+cp src/build/libgtest_main.a lib
+cp -r src/include/gtest include
+cd ..

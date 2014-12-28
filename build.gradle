@@ -1,27 +1,21 @@
 apply plugin: 'c'
 apply plugin: 'cpp'
 
-buildscript {
-    repositories { mavenCentral() }
-    dependencies { classpath 'org.ajoberstar:gradle-git:0.12.0' }
-}
+def gtestBuild = new File('./deps/gtest/lib/libgtest.a')
 
-import org.ajoberstar.grgit.*
-
-def handleDep = { uri, depName, buildScript ->
-    def tmpDir = new File(depName)
-    tmpDir.mkdirs()
-    Grgit.clone(dir: tmpDir, uri: uri)
-    def proc = new File(buildScript).getAbsolutePath().execute()
-    println "building ${depName}...\n${proc.text}"
-}
-
-task deps << {
-    def gtestScript = 'deps/gtest/build.sh'
-    if (System.properties['os.name'].toLowerCase().contains('windows')) {
-        gtestScript = 'deps/gtest/build.bat'
+task depGtest << {
+    if (!gtestBuild.exists()) {
+        def buildScript = 'deps/gtest/build.sh'
+        if (System.properties['os.name'].toLowerCase().contains('windows')) {
+            buildScript = 'deps/gtest/build.ps1'
+        }
+        def buildProc = new File(buildScript).getAbsolutePath().execute()
+        println "${buildProc.text}"
     }
-    handleDep ('https://github.com/mrbroll/gtest-mirror.git', 'gtest', gtestScript)
+}
+
+task deps {
+    dependsOn depGtest
 }
 
 model {
@@ -52,22 +46,18 @@ libraries {
     sdnbc {}
 }
 
-def gtestBuildSDNBC = new File('./deps/gtest/lib/libgtest.a')
-
 executables {
     test {
         binaries.all {
             lib libraries.sdnbc.static
             lib library: 'gtest', linkage: 'static'
-            if (!gtestBuildSDNBC.exists()) {
-                tasks.withType(CppCompile) { 
-                    dependsOn deps
-                }
+            tasks.withType(CppCompile) {
+                dependsOn depGtest
             }
             tasks.withType(LinkExecutable) {
                 doLast {
                     if (outputFile.exists()) {
-                        println 'Run Tests with "gradle sdnbcTests"\n'
+                        println 'Run Tests with "gradle test"\n'
                     }
                 }
             }
